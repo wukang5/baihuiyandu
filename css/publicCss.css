@@ -1,0 +1,367 @@
+/*新建订单*/
+
+.neworderform .neworderbtn,
+.remarkBtn,
+.lastPage,
+.nextPage {
+	width: 1.2rem;
+	height: 0.45rem;
+	font-size: 0.25rem;
+	border: 0.01rem solid black;
+	box-shadow: gray 0.03rem 0.03rem;
+	text-align: center;
+	line-height: 0.45rem;
+	border-radius: 0.08rem;
+}
+
+.neworderform .save,
+.neworderform .check,
+.lastPage,
+.nextPage {
+	float: left;
+	margin-left: 0.3rem;
+}
+.ordertime{
+	font-size: 0.25rem;
+	display: none;
+	text-indent: 0.3rem;
+	margin-top: 0;
+}
+.neworderform .neworderdiv {
+	width: 6rem;
+	height: 0.5rem;
+	font-size: 0.25rem;
+	margin-left: 0.3rem;
+	/*margin-top: 0.1rem;*/
+}
+
+.neworderform .detailMoney,
+.neworderform .addInventory {
+	float: right;
+	margin-right: 0.1rem;
+}
+
+input {
+	width: 3rem;
+	height: 0.45rem;
+	text-indent: 0.2rem;
+	font-size: 0.25rem;
+}
+
+.remarkName {
+	float: left;
+}
+
+.remark {
+	width: 3rem;
+	height: 0.45rem;
+	border: 0.01rem solid black;
+	text-indent: 0.2rem;
+	font-size: 0.25rem;
+	float: left;
+	overflow: scroll;
+}
+
+.addRemark {
+	display: none;
+	position: absolute;
+	top: 4.5rem;
+	left: 1rem;
+	background-color: white;
+}
+
+.remarkBtn {
+	margin: auto;
+}
+
+.neworderform .neworderfooter {
+	width: 100%;
+	overflow: scroll;
+	border-top: gray solid 0.01rem;
+	margin-top: 0.4rem;
+}
+
+.neworderform .neworderfooter .listBox {
+	overflow: hidden;
+	position: relative;
+}
+
+.neworderform .neworderfooter .listBox:nth-child(odd) {
+	background-color: gainsboro;
+}
+
+.neworderform .neworderfooter .listBox p {
+	width: 2.9rem;
+	font-size: 0.25rem;
+	float: left;
+	margin-left: 0.1rem;
+	text-align: center;
+}
+
+.seachWrap {
+	width: 100%;
+	height: 100%;
+	background-color: rgba(51, 51, 51, 0.36);
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+}
+
+.selectGoods {
+	width: 90%;
+	margin: auto;
+	margin-top: 0.5rem;
+	background-color: #babac2;
+	padding-bottom: 0.2rem;
+}
+
+.selectGoods p {
+	font-size: 0.25rem;
+	text-align: center;
+}
+
+.search {
+	height: 0.6rem;
+}
+
+.search input {
+	width: 4.5rem;
+	margin: 0 0.2rem;
+	float: left;
+}
+
+.search .searchBtn {
+	width: 0.55rem;
+	height: 0.55rem;
+	float: left;
+	line-height: 0.55rem;
+	background-color: white;
+	border: 0.01rem solid black;
+	box-shadow: gray 0.03rem 0.03rem;
+	border-radius: 0.08rem;
+}
+
+.foodTrain {
+	max-height: 6.7rem;
+	overflow: scroll;
+}
+
+.allFood {
+	height: 0.8rem;
+	border-bottom: 0.01rem solid black;
+	background-color: gainsboro;
+	position: relative;
+}
+
+.allFood:nth-child(odd) {
+	background-color: white;
+}
+
+.allFood .goodInfo {
+	width: 2.5rem;
+	float: left;
+	margin-left: 0.2rem;
+}
+
+.allFood img {
+	width: 0.3rem;
+	position: absolute;
+	top: 0.2rem;
+	right: 0.2rem;
+	display: none;
+}
+
+.btnBox {
+	overflow: hidden;
+	margin-top: 0.1rem;
+}
+
+.btnBox p {
+	width: 2rem;
+	height: 0.55rem;
+	background-color: #fff;
+	float: left;
+	margin-left: 0.6rem;
+	line-height: 0.55rem;
+	border: 0.01rem solid black;
+	box-shadow: gray 0.03rem 0.03rem;
+	border-radius: 0.08rem;
+	text-align: center;
+}
+
+.btnBox .sure {
+	margin-left: 1.8rem;
+}
+
+.reviseWrap {
+	width: 100%;
+	height: 100%;
+	background-color: rgba(51, 51, 51, 0.36);
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+}
+
+.reviseCount {
+	width: 90%;
+	margin: 3rem 5%;
+	background-color: #5a9bd1;
+	padding-bottom: 0.2rem;
+	font-size: 0.25rem;
+	overflow: hidden;
+	position: relative;
+}
+
+.reviseCount .goodInfo,
+.reviseCount .priceInfo {
+	width: 2.5rem;
+	float: left;
+	margin-left: 0.2rem;
+	text-align: left;
+	text-indent: 0.1rem;
+}
+
+.reviseBtnBox {
+	float: left;
+}
+
+.countBox {
+	float: left;
+	margin-left: 0.2rem;
+	height: 0.6rem;
+	overflow: hidden;
+}
+
+.countBox input {
+	width: 1.5rem;
+	margin: 0 0.2rem;
+	float: left;
+}
+
+.countBox p {
+	float: left;
+}
+
+.reviseWrap1 {
+	width: 100%;
+	height: 100%;
+	background-color: rgba(51, 51, 51, 0.36);
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+}
+
+.reviseCount1 {
+	width: 90%;
+	margin: 1.5rem 5%;
+	background-color: #5a9bd1;
+	padding-bottom: 0.2rem;
+	font-size: 0.25rem;
+	overflow: hidden;
+	position: relative;
+	text-align: center;
+}
+
+.reviseCount1 .goodInfo {
+	width: 2.5rem;
+	float: left;
+	margin-left: 0.2rem;
+}
+
+.reviseBtnBox1 {
+	float: left;
+}
+
+.countBox1 {
+	float: left;
+	margin-left: 0.2rem;
+	height: 0.6rem;
+	overflow: hidden;
+}
+
+.countBox1 input {
+	width: 1.5rem;
+	margin: 0 0.2rem;
+	float: left;
+}
+
+.countBox1 p {
+	float: left;
+}
+
+
+/*订单列表*/
+
+.headBox {
+	width: 100%;
+	margin-top: 0.1rem;
+}
+
+.checkSelect{
+	width: 4.9rem;
+	height: 0.5rem;
+	margin-left: 0.8rem;
+	font-size: 0.25rem;
+}
+
+.dhDateBox span,
+.dhoverDateBox span {
+	float: left;
+	margin-left: 0.8rem;
+	font-size: 0.3rem;
+}
+
+.dhDate,
+.dhoverDate {
+	width: 3.1rem;
+	height: 0.45rem;
+	float: left;
+	margin-left: 0.5rem;
+	font-size: 0.25rem;
+}
+
+.dhDateBox,
+.dhoverDateBox {
+	overflow: hidden;
+	margin-top: 0.2rem;
+}
+
+.lastPage,
+.nextPage {
+	width: 2rem;
+	height: 0.55rem;
+	margin: 0.25rem 0 0 0.8rem;
+	line-height: 0.55rem;
+}
+
+.footBox {
+	width: 100%;
+	/*margin-top: 0.2rem;*/
+	overflow: scroll;
+	border-top: gray solid 0.01rem;
+}
+
+.footBox .mylist:nth-child(odd) {
+	overflow: hidden;
+	background-color: gainsboro;
+}
+
+.footBox .mylist:nth-child(even) {
+	overflow: hidden;
+}
+
+.footBox .mylist p {
+	width: 4rem;
+	font-size: 0.3rem;
+	float: left;
+	margin-left: 0.2rem;
+}
+
+.footBox .mylist .date,
+.footBox .mylist .state {
+	width: 2rem;
+}
+

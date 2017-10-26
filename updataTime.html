@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>订单系统开放时间修改</title>
+		<link rel="stylesheet" type="text/css" href="css/reset.css" />
+		<style type="text/css">
+			input,button{
+				height: 32px;
+				font-size: 18px;
+				margin-top: 10px;
+				margin-left: 30px;
+			}
+			input{
+				width: 200px;
+			}
+			button{
+				width: 100px;
+			}
+			p{
+				margin-left: 30px;
+				font-size: 18px;
+				margin-top: 20px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="wrap">
+			<input class="statrTime" type="text" placeholder="开始时间" />
+			<input class="endTime" type="text" placeholder="结束时间" />
+			<button>修改</button>
+			<p>开放时间为24小时制，只能在开放时间和结束时间区段内登录。例如开始时间为6，结束时间为15，只能在6点到15点之间登录。</p>
+		</div>
+	</body>
+	<script src="js/jquery-1.12.4min.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		$("button").click(function() {
+			$.post("php/timeUpdata.php", {
+					startTime: $(".statrTime").val(),
+					endTime: $(".endTime").val(),
+				},
+				function(data) {
+					if(data == "1") {
+						alert("修改成功");
+					}
+				});
+		})
+	</script>
+
+</html>
