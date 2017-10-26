@@ -190,6 +190,7 @@
 						xmlStrDoc.async = "false";
 						xmlStrDoc.loadXML(str);
 					}
+					console.log(xmlStrDoc);
 					if(xmlStrDoc.getElementsByTagName('ufinterface')[0].getAttribute("succeed") == 1) {
 						sessionStorage.setItem("ccusname", xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("cCusName"));
 						sessionStorage.setItem("ccuscode", xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("cCusCode"));

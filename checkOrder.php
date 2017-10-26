@@ -391,7 +391,7 @@
 
 		function sure(e) {
 //			$(".allFood").remove();
-//			$(".search input").val("");
+			$(".search input").val("");
 			$(".seachWrap").css({
 				display: "none"
 			});
