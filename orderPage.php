@@ -123,8 +123,8 @@
 			<div class="neworderform">
 				<div class="neworderheader">
 					<div style="height: 0.5rem;margin-top: 0.1rem;">
-						<div class="ordertime">00</div>
 						<div class="neworderbtn save">保存</div>
+						<div class="ordertime" style="color: red; font-weight: bold;float: left;margin-left: 0;display: none;">00</div>
 						<div class="neworderbtn check" style="display: none;">审核</div>
 					</div>
 					<div class="neworderdiv customer">
@@ -232,6 +232,7 @@
 				<div class="footBox">
 
 				</div>
+				<p class="pageNum" style="text-align: center;display: none; font-size: 0.25rem;"></p>
 			</div>
 			<div class="footer">
 				<div class="orderPage"><img src="img/dingdan.png" alt="" />
@@ -253,7 +254,7 @@
 		$(".neworderfooter").innerHeight(0.37 * window.innerHeight);
 		$(".orderlistform").innerHeight(0.86 * window.innerHeight);
 		$(".headBox").innerHeight(0.20 * window.innerHeight);
-		$(".footBox").innerHeight(0.65 * window.innerHeight);
+		$(".footBox").innerHeight(0.55 * window.innerHeight);
 		
 
 		//		事件
@@ -426,22 +427,24 @@
 				}
 			}
 		}
-		var time = now.getHours();
-		//		获取开放时间
-		$.get("php/timeQuery.php", function(data) {
-			var timeStr = JSON.parse(data);
-			var startTime = timeStr[0].startTime;
-			var endTime = timeStr[0].endTime;
-			if(time < startTime || time > endTime){
-				$(".save").css({
-					display:"none"
-				});
-				$(".ordertime").css({
-					display:"block"
-				});
-				$(".ordertime")[0].innerHTML = "订货时间为"+startTime+":00-"+endTime+":00之间";
-			}
-		});
+		function timeCtl () {
+			var time = now.getHours();
+			//		获取开放时间
+			$.get("php/timeQuery.php", function(data) {
+				var timeStr = JSON.parse(data);
+				var startTime = timeStr[0].startTime;
+				var endTime = timeStr[0].endTime;
+				if(time < startTime || time >= endTime){
+					$(".check").css({
+						display:"none"
+					});
+					$(".ordertime").css({
+						display:"block"
+					});
+					$(".ordertime")[0].innerHTML = "订货时间为"+startTime+":00-"+endTime+":00之间";
+				}
+			});
+		}
 		$(".save")[0].addEventListener('touchstart', save, false);
 
 		function save(e) {
@@ -482,6 +485,7 @@
 											display:"none"
 										});
 										alert("保存成功");
+										timeCtl();
 										$(".check").css({
 											display: "block"
 										});
@@ -589,35 +593,46 @@
 				display: "block"
 			})
 		}
+		
 		//		上一页/下一页控制
-		var pages = sessionStorage.getItem("pages");
-		var pagenumber = pages;
-		pageCtl(pagenumber);
+		var dateFun = 0;
+		pageCtl(1);
+		var pages;
+		var pagesNum;
 		$(".lastPage")[0].addEventListener('touchstart', lastpage, false);
 
 		function lastpage(e) {
-			$(".sortSelect").val("desc");
-			$(".checkSelect").val("all");
 			$(".footBox .mylist").remove();
-			if(pagenumber < pages) {
-				pagenumber = pagenumber + 1;
+			pages = Number(sessionStorage.getItem("pages"));
+			if(pages > 1) {
+				pages = pages - 1;
 			}
-			pageCtl(pagenumber);
+			if (dateFun == 0) {
+				pageCtl(pages);
+			} else{
+				dateQuery(pages);
+			}
 		}
 		$(".nextPage")[0].addEventListener('touchstart', nextpage, false);
 
 		function nextpage(e) {
-			$(".sortSelect").val("desc");
-			$(".checkSelect").val("all");
-			$(".mylist").remove();
-			if(pagenumber > 1) {
-				pagenumber = pagenumber - 1;
-
+			$(".footBox .mylist").remove();
+			pages = Number(sessionStorage.getItem("pages"));
+			pagesNum = Number(sessionStorage.getItem("pagesNum"));
+			if(pages < pagesNum) {
+				pages = pages + 1;
 			}
-			pageCtl(pagenumber);
+			if (dateFun == 0) {
+				pageCtl(pages);
+			} else{
+				dateQuery(pages);
+			}
 		}
-
 		function pageCtl(pagenumber) {
+			$(".pageNum").css({
+				display:"block"
+			});
+			$(".footBox .mylist").remove();
 			var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql" pagenumer="' + pagenumber + '" pagesize="5" proc="Query" efdebug="1" sqlstr="SELECT id,ddate,t_ccuscode,t_ccusname,cverifier, ccode FROM V_EF_XYbase WHERE cvouchtype=\'EFXYKZ003\' AND t_ccuscode=\'' + sessionStorage.getItem("ccuscode") + '\'" orderbyfilename = "ccode"></ufinterface>';
 			$.post("php/inventory.php", {
 				context: context
@@ -632,7 +647,9 @@
 					xmlStrDoc.loadXML(str);
 				}
 				if (xmlStrDoc.getElementsByTagName('ufinterface')[0].getAttribute("succeed") == 1) {
-					sessionStorage.setItem("pages", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages"));
+					sessionStorage.setItem("pages", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer"));
+					$(".pageNum").html("第"+xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer")+"页/共"+xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages")+"页");
+					sessionStorage.setItem("pagesNum", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages"));
 					for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 						var check = "";
 						if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("cverifier") == null) {
@@ -641,7 +658,6 @@
 							check = "已审核";
 						}
 						var dateStr = xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ddate").slice(0, 10);
-						//					console.log(dateStr)
 						$(".footBox").append("<div class='mylist'><p class='listCode'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccode") + "</p><p class='date'>" + dateStr + "</p><p class='customerName'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("t_ccusname") + "</p><p class='state'>" + check + "</p><p class='listId' style='display: none;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("id") + "</p></div>");
 					}
 					toOrder();
@@ -688,11 +704,12 @@
 		});
 		
 		//		日期查询
-		$(".dhDateBox .dhDate").change(function() {
-			$(".mylist").remove();
-			$(".sortSelect").val("asc");
-			$(".checkSelect").val("all");
-			var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql" pagenumer="1" pagesize="200" sqlstr="SELECT id, t_ccuscode,t_ccusname,cverifier, ccode,ddate FROM V_EF_XYbase WHERE cvouchtype=\'EFXYKZ003\' AND t_ccuscode=\'' + sessionStorage.getItem("ccuscode") + '\' AND ddate=\'' + $(".dhDateBox .dhDate").val() + '\'" proc="Query" efdebug="1"  ></ufinterface>';
+		function dateQuery (pagenumber) {
+			$(".pageNum").css({
+				display:"block"
+			});
+			$(".footBox .mylist").remove();
+			var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql"  pagenumer="' + pagenumber + '" pagesize="5" sqlstr="SELECT id, t_ccuscode,t_ccusname,cverifier, ccode,ddate FROM V_EF_XYbase WHERE cvouchtype=\'EFXYKZ003\' AND t_ccuscode=\'' + sessionStorage.getItem("ccuscode") + '\' AND ddate=\'' + $(".dhDateBox .dhDate").val() + '\'" proc="Query" efdebug="1"  ></ufinterface>';
 			$.post("php/inventory.php", {
 				context: context
 			}, function(str) {
@@ -705,11 +722,10 @@
 					xmlStrDoc.async = "false";
 					xmlStrDoc.loadXML(str);
 				}
-				if(xmlStrDoc.getElementsByTagName('ufinterface')[0].getAttribute("succeed") == "0") {
-					alert("您查询的日期不存在");
-					pageCtl(pagenumber);
-				} else {
-					sessionStorage.setItem("pages", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages"));
+				if(xmlStrDoc.getElementsByTagName('ufinterface')[0].getAttribute("succeed") == "1") {
+					sessionStorage.setItem("pages", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer"));
+					$(".pageNum span").html(xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer"));
+					sessionStorage.setItem("pagesNum", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages"));
 					for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 						var check = "";
 						if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("cverifier") == null) {
@@ -721,8 +737,15 @@
 						$(".footBox").append("<div class='mylist'><p class='listCode'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccode") + "</p><p class='date'>" + dateStr + "</p><p class='customerName'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("t_ccusname") + "</p><p class='state'>" + check + "</p><p class='listId' style='display: none;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("id") + "</p></div>");
 					}
 					toOrder();
+				} else {
+					alert("您查询的日期不存在");
+					pageCtl(pagenumber);
 				}
 			});
+		}
+		$(".dhDateBox .dhDate").change(function() {
+			dateFun = 1;
+			dateQuery(1);
 		});
 
 		function toOrder() {

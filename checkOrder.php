@@ -99,8 +99,8 @@
 			<div class="neworderform">
 				<div class="neworderheader">
 					<div class="headerBtn" style="height: 0.5rem;margin-top: 0.1rem;">
-						<div class="ordertime">00</div>
 						<div class="neworderbtn save">保存</div>
+						<div class="ordertime" style="color: red; font-weight: bold;float: left;margin-left: 0;display: none;">00</div>
 						<div class="neworderbtn check">审核</div>
 					</div>
 					<div class="neworderdiv customer">
@@ -198,25 +198,25 @@
 		$(".neworderfooter").innerHeight(0.5 * window.innerHeight);
 		var now = new Date();
 		var time = now.getHours();
-		//		获取开放时间
-		$.get("php/timeQuery.php", function(data) {
-			var timeStr = JSON.parse(data);
-			var startTime = timeStr[0].startTime;
-			var endTime = timeStr[0].endTime;
-			if(time < startTime || time > endTime){
-				$(".save").css({
-					display:"none"
-				});
-				$(".check").css({
-					display:"none"
-				});
-				$(".ordertime").css({
-					display:"block"
-				});
-				$(".ordertime")[0].innerHTML = "订货时间为"+startTime+":00-"+endTime+":00之间";
-			}
-		});
-		
+		function timeCtl () {
+			var time = now.getHours();
+			//		获取开放时间
+			$.get("php/timeQuery.php", function(data) {
+				var timeStr = JSON.parse(data);
+				var startTime = timeStr[0].startTime;
+				var endTime = timeStr[0].endTime;
+				if(time < startTime || time >= endTime){
+					$(".check").css({
+						display:"none"
+					});
+					$(".ordertime").css({
+						display:"block"
+					});
+					$(".ordertime")[0].innerHTML = "订货时间为"+startTime+":00-"+endTime+":00之间";
+				}
+			});
+		}
+		timeCtl();
 		//		事件
 		if(sessionStorage.getItem("isChecked") == "已审核") {
 			$(".headerBtn").css({
@@ -287,10 +287,8 @@
 				oldCount = oldCount + parseFloat(listBox[i].children[2].innerText);
 				oldAllPrice = oldAllPrice + parseFloat(listBox[i].children[2].innerHTML) * parseFloat(listBox[i].children[4].innerHTML);
 			}
-//			console.log(Math.floor(oldAllPrice * 100) / 100);
 			$(".neworderheader .detail .num")[0].innerHTML = oldCount;
 			$(".neworderheader .detail .jine")[0].innerHTML = Math.floor(oldAllPrice * 100) / 100;
-//			console.log($(".neworderheader .detail .jine")[0].innerHTML);
 			$(".dhDate input").val(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ddate").substring(0, 10));
 			updataCount();
 		});
@@ -462,7 +460,7 @@
 								alert("保存成功");
 								$(".adInfo").css({
 									display:"none"
-								})
+								});
 								//						window.location.href = "checkOrder.html";
 							}
 						});

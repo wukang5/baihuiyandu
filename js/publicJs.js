@@ -315,7 +315,6 @@ function addInventory(e) {
 											xmlStrDoc.async = "false";
 											xmlStrDoc.loadXML(str);
 										}
-										//							console.log(xmlStrDoc);
 										var isExist = false;
 										for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 											if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccuscode") == sessionStorage.getItem("ccuscode")) {
@@ -435,7 +434,7 @@ function getFoodsList() {
 						xmlStrDoc.loadXML(str);
 					}
 					var xmlStrDocString = creatXmlString(xmlStrDoc);
-					MyLocalStorage.Cache.put("foodsListCache", xmlStrDocString, 2 * 60);
+					MyLocalStorage.Cache.put("foodsListCache", xmlStrDocString, 1 * 24 * 60 * 60);
 					for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 						$(".collect").append("<div class='allFood'><p class='goodInfo' style='width: 96%;text-align: left; text-indent: 0.3rem;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("cinvname") + "</p><p class='goodInfo'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("cinvcode") + "</p><p class='goodInfo'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("cinvstd") + "</p><img src='img/shoucang.png'></div>");
 					}
