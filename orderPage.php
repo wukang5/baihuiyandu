@@ -256,7 +256,18 @@
 		$(".headBox").innerHeight(0.20 * window.innerHeight);
 		$(".footBox").innerHeight(0.55 * window.innerHeight);
 		
-
+		//信用额度
+		$(".creditMoney")[0].innerText = sessionStorage.getItem("creditMoney");
+		//客户余额
+		$(".money")[0].innerText = sessionStorage.getItem("money");
+		//已占用金额
+		$(".UseingMoney")[0].innerText = sessionStorage.getItem("UseingMoney");
+		//可用余额
+		$(".balanceMoney")[0].innerText = sessionStorage.getItem("balanceMoney");
+		//加工厂返利余额
+		$(".jgcBalance .money")[0].innerText = sessionStorage.getItem("jgcBalance");
+		//屠宰场返利余额
+		$(".tzcBalance .money")[0].innerText = sessionStorage.getItem("tzcBalance");
 		//		事件
 		$(".accountChecking")[0].addEventListener('touchstart', accountChecking, false);
 
@@ -724,7 +735,7 @@
 				}
 				if(xmlStrDoc.getElementsByTagName('ufinterface')[0].getAttribute("succeed") == "1") {
 					sessionStorage.setItem("pages", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer"));
-					$(".pageNum span").html(xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer"));
+					$(".pageNum").html("第"+xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pagenumer")+"页/共"+xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages")+"页");
 					sessionStorage.setItem("pagesNum", xmlStrDoc.getElementsByTagName("voucher")[0].getAttribute("pages"));
 					for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 						var check = "";

@@ -106,24 +106,8 @@
 					<div class="neworderdiv customer">
 						<span>客户：</span><span class="customerName"></span>
 					</div>
-					<div class="neworderdiv balance">
-						<span>客户余额：</span><span class="money"></span>
-					</div>
-					<div class="neworderdiv balance">
-						<span>信用额度：</span><span class="creditMoney"></span>
-					</div>
-					<div class="neworderdiv balance">
-						<span>已占用金额：</span><span class="UseingMoney">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;
-						<span>可用余额：</span><span class="balanceMoney">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-					</div>
-					<div class="neworderdiv jgcBalance">
-						<span>加工厂返利余额：</span><span class="money"></span>
-					</div>
-					<div class="neworderdiv tzcBalance">
-						<span>屠宰厂返利余额：</span><span class="money"></span>
-					</div>
-					<div class="neworderdiv balance">
-						<p class="remarkName">备注：</p><p class="remark"></p>
+					<div class="neworderdiv cCode">
+						<span>订单号：</span><span class="ccodeName"></span>
 					</div>
 					<div class="neworderdiv dhDate">
 						<span>单据日期：</span><input disabled="disabled" type="date" name="" id="" value="" />
@@ -136,11 +120,7 @@
 				<div class="neworderfooter">
 					<div class="footerWindow"></div>
 				</div>
-				<!--添加备注页面-->
-				<div class="addRemark">
-					<textarea name="remark" rows="10" cols="40"></textarea>
-					<div class="neworderbtn remarkBtn">添加备注</div>
-				</div>
+				
 				<div class="seachWrap">
 					<div class="selectGoods">
 						<p>选择存货</p>
@@ -194,8 +174,8 @@
 	<script src="js/publicJs.js" type="text/javascript" charset="utf-8"></script>
 	<script>
 		$(".neworderform").innerHeight(0.935 * window.innerHeight);
-		$(".neworderheader").innerHeight(0.38 * window.innerHeight);
-		$(".neworderfooter").innerHeight(0.5 * window.innerHeight);
+		$(".neworderheader").innerHeight(0.2 * window.innerHeight);
+		$(".neworderfooter").innerHeight(0.68 * window.innerHeight);
 		var now = new Date();
 		var time = now.getHours();
 		function timeCtl () {
@@ -227,23 +207,7 @@
 			});
 			
 		}
-		//		点击添加备注
-		$(".remark")[0].addEventListener('touchstart', remark, false);
-
-		function remark(e) {
-			$(".addRemark").css({
-				display:"block"
-			});
-			$("textarea").val($(".remark").html());
-		}
-		$(".remarkBtn")[0].addEventListener('touchstart', remarkBtn, false);
-
-		function remarkBtn(e) {
-			$(".addRemark").css({
-				display:"none"
-			});
-			$(".remark").html($("textarea").val());
-		}
+		$(".ccodeName").html(sessionStorage.getItem("listcode"));
 		var issave = false//判断能否保存
 		var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql" pagenumer="1" pagesize="200" sqlstr="SELECT ccode,t_ccuscode,cverifier, ddate,b_cinvcode,b_cinvname,b_float1,b_float2,str70 FROM V_List_EF_XYbase WHERE cvouchtype=\'EFXYKZ003\' AND ccode=\'' + sessionStorage.getItem("listcode") + '\'" proc="Query" efdebug="1"  ></ufinterface>';
 		$.ajaxSettings.async = false;
@@ -259,7 +223,6 @@
 				xmlStrDoc.async = "false";
 				xmlStrDoc.loadXML(str);
 			}
-			$(".remark").html(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("str70"));
 			for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
 				$(".footerWindow").append("<div class='listBox'><p class='goodName' style='text-indent: 0.3rem;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvname") + "</p><p style='width:0.2rem;position:absolute;right:2.5rem;'>¥</p><p class='price'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float2")) + "</p><p class='standard'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvcode") + "</p><p class='count'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float1")) + "</p><p class='delList' style='width:0.8rem;height:0.4rem;font-size:0.3rem;border: 0.01rem solid black;position: absolute;top: 0.25rem;right: 0.2rem;line-height: 0.4rem;'>删除</p></div>");
 			}

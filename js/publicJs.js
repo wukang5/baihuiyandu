@@ -142,18 +142,7 @@ if(!sessionStorage.tzcBalance || sessionStorage.tzcBalance == "") {
 	});
 	$.ajaxSettings.async  =  false;
 }
-//信用额度
-$(".creditMoney")[0].innerText = sessionStorage.getItem("creditMoney");
-//客户余额
-$(".money")[0].innerText = sessionStorage.getItem("money");
-//已占用金额
-$(".UseingMoney")[0].innerText = sessionStorage.getItem("UseingMoney");
-//可用余额
-$(".balanceMoney")[0].innerText = sessionStorage.getItem("balanceMoney");
-//加工厂返利余额
-$(".jgcBalance .money")[0].innerText = sessionStorage.getItem("jgcBalance");
-//屠宰场返利余额
-$(".tzcBalance .money")[0].innerText = sessionStorage.getItem("tzcBalance");
+
 
 //定时缓存函数
 var MyLocalStorage = {
