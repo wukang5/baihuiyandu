@@ -52,16 +52,20 @@
 				margin: 0;
 				color: #e98f36;
 			}
-			.loginOut{
+			.btnP{
 				width: 5rem;
 				height: 0.6rem;
-				margin: 1rem auto;
+				margin: 0.4rem auto;
 				line-height: 0.6rem;
 				border-radius: 0.5rem;
 				font-size: 0.3rem;
 				background-color: #e98f36;
 				color: white;
 				text-align: center;
+			}
+			.clearCookie{
+				margin-top: 1.5rem;
+				background-color: red;
 			}
 			.footer{
 				width: 100%;
@@ -93,7 +97,8 @@
 				<div class="username"><span>测试</span><img src="img/right.png" alt="" /></div>
 				<div class="foodSafe"><span>食品安全</span><img src="img/right.png" alt="" /></div>
 				<div class="connectUs"><span>联系我们</span><img src="img/right.png" alt="" /></div>
-				<p class="loginOut">退出登录</p>
+				<p class="btnP clearCookie">清空缓存</p>
+				<p class="btnP loginOut">退出登录</p>
 			</div>
 			<div class="footer">
 				<div class="orderPage"><img src="img/dingdan1.png" alt="" /><p>订单</p></div>
@@ -103,6 +108,7 @@
 		</div>
 
 	</body>
+	<script src="js/cache.js" type="text/javascript" charset="utf-8"></script>
 	<script>
 		$(".wrap").innerWidth(window.innerWidth);
 		$(".wrap").innerHeight(window.innerHeight);
@@ -126,6 +132,15 @@
 		$(".connectUs")[0].addEventListener('touchstart',connectUs,false);
 		function connectUs(e){
 			window.location.href = "connectUs.php";
+		}
+		$(".clearCookie")[0].addEventListener('touchstart',clearCookie,false);
+		function clearCookie(e){
+			MyLocalStorage.Cache.clear();
+			$.post("php/clearSession.php", {sessionInfo: "loginout"}, function(data) {
+				
+			})
+			sessionStorage.clear();
+			window.location.href = "index.php";
 		}
 		$(".loginOut")[0].addEventListener('touchstart',loginOut,false);
 		function loginOut(e){

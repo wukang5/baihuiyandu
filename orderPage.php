@@ -323,7 +323,7 @@
 		var day = ("0" + now.getDate()).slice(-2);
 		var month = ("0" + (now.getMonth() + 1)).slice(-2);
 		var today = now.getFullYear() + "-" + (month) + "-" + (day);
-		$(".dhDate input").val(today);
+		$(".dhDateBox .dhDate").val(today);
 		
 		
 		
@@ -644,7 +644,7 @@
 				display:"block"
 			});
 			$(".footBox .mylist").remove();
-			var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql" pagenumer="' + pagenumber + '" pagesize="5" proc="Query" efdebug="1" sqlstr="SELECT id,ddate,t_ccuscode,t_ccusname,cverifier, ccode FROM V_EF_XYbase WHERE cvouchtype=\'EFXYKZ003\' AND t_ccuscode=\'' + sessionStorage.getItem("ccuscode") + '\'" orderbyfilename = "ccode"></ufinterface>';
+			var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="'+efid+'" eftype="EFsql" pagenumer="' + pagenumber + '" pagesize="5" proc="Query" efdebug="1" sqlstr="SELECT id,ddate,t_ccuscode,t_ccusname,cverifier, ccode FROM V_EF_XYbase WHERE ddate=\'' + $(".dhDateBox .dhDate").val() + '\' AND cvouchtype=\'EFXYKZ003\' AND t_ccuscode=\'' + sessionStorage.getItem("ccuscode") + '\'" orderbyfilename = "ccode"></ufinterface>';
 			$.post("php/inventory.php", {
 				context: context
 			}, function(str) {
@@ -749,7 +749,7 @@
 					}
 					toOrder();
 				} else {
-					alert("您查询的日期不存在");
+					alert("该日期无订单");
 					pageCtl(pagenumber);
 				}
 			});

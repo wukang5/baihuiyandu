@@ -80,7 +80,7 @@ input {
 	width: 100%;
 	overflow: scroll;
 	border-top: gray solid 0.01rem;
-	margin-top: 0.4rem;
+	margin-top: 1rem;
 }
 
 .neworderform .neworderfooter .listBox {

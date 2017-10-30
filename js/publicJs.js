@@ -144,73 +144,6 @@ if(!sessionStorage.tzcBalance || sessionStorage.tzcBalance == "") {
 }
 
 
-//定时缓存函数
-var MyLocalStorage = {
-	Cache: {
-		/** 
-		 * 总容量5M 
-		 * 存入缓存，支持字符串类型、json对象的存储 
-		 * 页面关闭后依然有效 ie7+都有效 
-		 * @param key 缓存key 
-		 * @param stringVal 
-		 * @time 数字 缓存有效时间（秒） 默认60s  
-		 * 注：localStorage 方法存储的数据没有时间限制。第二天、第二周或下一年之后，数据依然可用。不能控制缓存时间，故此扩展 
-		 * */
-		put: function(key, stringVal, time) {
-			try {
-				if(!localStorage) {
-					return false;
-				}
-				if(!time || isNaN(time)) {
-					time = 60;
-				}
-				var cacheExpireDate = (new Date() - 1) + time * 1000;
-				var cacheVal = {
-					val: stringVal,
-					exp: cacheExpireDate
-				};
-				localStorage.setItem(key, JSON.stringify(cacheVal)); //存入缓存值  
-			} catch(e) {}
-		},
-		/**获取缓存*/
-		get: function(key) {
-			try {
-				if(!localStorage) {
-					return false;
-				}
-				var cacheVal = localStorage.getItem(key);
-				var result = JSON.parse(cacheVal);
-				var now = new Date() - 1;
-				if(!result) {
-					return null;
-				} //缓存不存在  
-				if(now > result.exp) { //缓存过期  
-					this.remove(key);
-					return "";
-				}
-				return result.val;
-			} catch(e) {
-				this.remove(key);
-				return null;
-			}
-		},
-		/**移除缓存，一般情况不手动调用，缓存过期自动调用*/
-		remove: function(key) {
-			if(!localStorage) {
-				return false;
-			}
-			localStorage.removeItem(key);
-		},
-		/**清空所有缓存*/
-		clear: function() {
-			if(!localStorage) {
-				return false;
-			}
-			localStorage.clear();
-		}
-	} //end Cache  
-}
-
 //点击添加存货
 $(".addInventory")[0].addEventListener('touchstart', addInventory, false);
 
@@ -261,21 +194,14 @@ function addInventory(e) {
 						clearTimeout(timeOutEvent);
 						if(timeOutEvent != 0) {
 							foodsId = this.children[1].innerHTML;
-							var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" sqlstr="select cCusDefine5 from customer where ccusCode = \'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1" />';
-							$.post("php/inventory.php", {
-								context: context
-							}, function(str) {
-								var xmlStrDoc = null;
-								if(window.DOMParser) { // Mozilla Explorer 
-									parser = new DOMParser();
-									xmlStrDoc = parser.parseFromString(str, "text/xml");
-								} else { // Internet Explorer 
-									xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
-									xmlStrDoc.async = "false";
-									xmlStrDoc.loadXML(str);
-								}
-								if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") != null) {
-									var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select top 1 iprice as price,* from PriceJustify where ccusproperty1 = \'' + xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") + '\' and cInvCode=\'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') order by dstartdate desc" proc="Query" efdebug="1" />';
+							var foodsIdCache = MyLocalStorage.Cache.get(foodsId);
+							if(foodsIdCache == null) {
+								//							点击加订单
+								$(".reviseCount .goodInfo").remove();
+								clearTimeout(timeOutEvent);
+								if(timeOutEvent != 0) {
+									foodsId = this.children[1].innerHTML;
+									var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" sqlstr="select cCusDefine5 from customer where ccusCode = \'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1" />';
 									$.post("php/inventory.php", {
 										context: context
 									}, function(str) {
@@ -288,63 +214,8 @@ function addInventory(e) {
 											xmlStrDoc.async = "false";
 											xmlStrDoc.loadXML(str);
 										}
-										$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
-									});
-								} else {
-									var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select cCusCode from PriceJustify where cInvCode = \'' + foodsId + '\'" proc="Query" efdebug="1"  ></ufinterface>';
-									$.post("php/inventory.php", {
-										context: context
-									}, function(str) {
-										var xmlStrDoc = null;
-										if(window.DOMParser) { // Mozilla Explorer 
-											parser = new DOMParser();
-											xmlStrDoc = parser.parseFromString(str, "text/xml");
-										} else { // Internet Explorer 
-											xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
-											xmlStrDoc.async = "false";
-											xmlStrDoc.loadXML(str);
-										}
-										var isExist = false;
-										for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
-											if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccuscode") == sessionStorage.getItem("ccuscode")) {
-												isExist = true;
-											}
-										}
-										if(isExist == false) {
-											switch(sessionStorage.getItem("priceGrade")) {
-												case "1":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost1 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost1 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "2":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost2 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost2 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "3":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost3 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost3 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "4":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost4 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost4 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "5":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost5 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost5 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "6":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost6 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost6 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "7":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost7 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost7 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "8":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost8 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost8 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "9":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost9 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost9 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												case "10":
-													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost10 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost10 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
-													break;
-												default:
-													break;
-											}
+										if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") != null) {
+											var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select top 1 iprice as price,* from PriceJustify where ccusproperty1 = \'' + xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") + '\' and cInvCode=\'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') order by dstartdate desc" proc="Query" efdebug="1" />';
 											$.post("php/inventory.php", {
 												context: context
 											}, function(str) {
@@ -357,10 +228,11 @@ function addInventory(e) {
 													xmlStrDoc.async = "false";
 													xmlStrDoc.loadXML(str);
 												}
+												MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
 												$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
 											});
 										} else {
-											var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select a.cCusCode,a.iCostGrade,b.cInvCode,b.iPrice as price,b.dstartdate,b.denddate from Customer a left join PriceJustify b on a.cCusCode=b.cCusCode where b.cInvCode=\'' + foodsId + '\' and a.cCusCode=\'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1"  ></ufinterface>';
+											var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select cCusCode from PriceJustify where cInvCode = \'' + foodsId + '\'" proc="Query" efdebug="1"  ></ufinterface>';
 											$.post("php/inventory.php", {
 												context: context
 											}, function(str) {
@@ -373,18 +245,102 @@ function addInventory(e) {
 													xmlStrDoc.async = "false";
 													xmlStrDoc.loadXML(str);
 												}
-												$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+												var isExist = false;
+												for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
+													if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccuscode") == sessionStorage.getItem("ccuscode")) {
+														isExist = true;
+													}
+												}
+												if(isExist == false) {
+													switch(sessionStorage.getItem("priceGrade")) {
+														case "1":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost1 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost1 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "2":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost2 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost2 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "3":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost3 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost3 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "4":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost4 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost4 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "5":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost5 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost5 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "6":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost6 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost6 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "7":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost7 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost7 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "8":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost8 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost8 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "9":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost9 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost9 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														case "10":
+															var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost10 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost10 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+															break;
+														default:
+															break;
+													}
+													$.post("php/inventory.php", {
+														context: context
+													}, function(str) {
+														var xmlStrDoc = null;
+														if(window.DOMParser) { // Mozilla Explorer 
+															parser = new DOMParser();
+															xmlStrDoc = parser.parseFromString(str, "text/xml");
+														} else { // Internet Explorer 
+															xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+															xmlStrDoc.async = "false";
+															xmlStrDoc.loadXML(str);
+														}
+														MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
+														$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+													});
+												} else {
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select a.cCusCode,a.iCostGrade,b.cInvCode,b.iPrice as price,b.dstartdate,b.denddate from Customer a left join PriceJustify b on a.cCusCode=b.cCusCode where b.cInvCode=\'' + foodsId + '\' and a.cCusCode=\'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1"  ></ufinterface>';
+													$.post("php/inventory.php", {
+														context: context
+													}, function(str) {
+														var xmlStrDoc = null;
+														if(window.DOMParser) { // Mozilla Explorer 
+															parser = new DOMParser();
+															xmlStrDoc = parser.parseFromString(str, "text/xml");
+														} else { // Internet Explorer 
+															xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+															xmlStrDoc.async = "false";
+															xmlStrDoc.loadXML(str);
+														}
+														MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
+														$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+													});
+												}
 											});
 										}
 									});
+									$(".reviseWrap").css({
+										display: "block"
+									});
+									$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p>");
 								}
-							});
-							$(".reviseWrap").css({
-								display: "block"
-							});
-							$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p>");
+								return false;
+							} else {
+								var foodsIdCache = MyLocalStorage.Cache.get(foodsId);
+								if(foodsIdCache == null) {
+									alert("缓存已过期,请再次点击该品.");
+								} else {
+									$(".reviseWrap").css({
+										display: "block"
+									});
+									$(".reviseCount .goodInfo").remove();
+									$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p><p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + MyLocalStorage.Cache.get(foodsId) + "</p>");
+								}
+							}
 						}
-						return false;
 					}
 				}
 			});
@@ -543,12 +499,153 @@ function addCollect() {
 				clearTimeout(timeOutEvent);
 				if(timeOutEvent != 0) {
 					foodsId = this.children[1].innerHTML;
-					$(".reviseWrap").css({
-						display: "block"
-					});
-					$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p>");
+					var foodsIdCache = MyLocalStorage.Cache.get(foodsId);
+					if(foodsIdCache == null) {
+						//							点击加订单
+						$(".reviseCount .goodInfo").remove();
+						clearTimeout(timeOutEvent);
+						if(timeOutEvent != 0) {
+							foodsId = this.children[1].innerHTML;
+							var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" sqlstr="select cCusDefine5 from customer where ccusCode = \'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1" />';
+							$.post("php/inventory.php", {
+								context: context
+							}, function(str) {
+								var xmlStrDoc = null;
+								if(window.DOMParser) { // Mozilla Explorer 
+									parser = new DOMParser();
+									xmlStrDoc = parser.parseFromString(str, "text/xml");
+								} else { // Internet Explorer 
+									xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+									xmlStrDoc.async = "false";
+									xmlStrDoc.loadXML(str);
+								}
+								if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") != null) {
+									var context = '<?xml version="1.0" encoding="utf-8" ?><ufinterface efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select top 1 iprice as price,* from PriceJustify where ccusproperty1 = \'' + xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("ccusdefine5") + '\' and cInvCode=\'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') order by dstartdate desc" proc="Query" efdebug="1" />';
+									$.post("php/inventory.php", {
+										context: context
+									}, function(str) {
+										var xmlStrDoc = null;
+										if(window.DOMParser) { // Mozilla Explorer 
+											parser = new DOMParser();
+											xmlStrDoc = parser.parseFromString(str, "text/xml");
+										} else { // Internet Explorer 
+											xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+											xmlStrDoc.async = "false";
+											xmlStrDoc.loadXML(str);
+										}
+										MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
+										$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+									});
+								} else {
+									var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" pagesize = "1000" sqlstr="select cCusCode from PriceJustify where cInvCode = \'' + foodsId + '\'" proc="Query" efdebug="1"  ></ufinterface>';
+									$.post("php/inventory.php", {
+										context: context
+									}, function(str) {
+										var xmlStrDoc = null;
+										if(window.DOMParser) { // Mozilla Explorer 
+											parser = new DOMParser();
+											xmlStrDoc = parser.parseFromString(str, "text/xml");
+										} else { // Internet Explorer 
+											xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+											xmlStrDoc.async = "false";
+											xmlStrDoc.loadXML(str);
+										}
+										var isExist = false;
+										for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
+											if(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("ccuscode") == sessionStorage.getItem("ccuscode")) {
+												isExist = true;
+											}
+										}
+										if(isExist == false) {
+											switch(sessionStorage.getItem("priceGrade")) {
+												case "1":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost1 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost1 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "2":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost2 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost2 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "3":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost3 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost3 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "4":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost4 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost4 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "5":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost5 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost5 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "6":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost6 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost6 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "7":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost7 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost7 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "8":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost8 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost8 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "9":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost9 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost9 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												case "10":
+													var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select top 1 iNInvCost10 as price,* from [PriceJustify] where cInvCode = \'' + foodsId + '\' and \'' + today + '\'&gt;=dstartdate and \'' + today + '\'&lt;ISNULL(denddate,\'2099-12-31\') and iNInvCost10 is not null and ccusproperty1 is null  order by dstartdate desc" proc="Query" efdebug="1"  ></ufinterface>';
+													break;
+												default:
+													break;
+											}
+											$.post("php/inventory.php", {
+												context: context
+											}, function(str) {
+												var xmlStrDoc = null;
+												if(window.DOMParser) { // Mozilla Explorer 
+													parser = new DOMParser();
+													xmlStrDoc = parser.parseFromString(str, "text/xml");
+												} else { // Internet Explorer 
+													xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+													xmlStrDoc.async = "false";
+													xmlStrDoc.loadXML(str);
+												}
+												MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
+												$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+											});
+										} else {
+											var context = '<?xml version="1.0" encoding="utf-8"?><ufinterface  efserverid="' + efid + '" eftype="EFsql" sqlstr="select a.cCusCode,a.iCostGrade,b.cInvCode,b.iPrice as price,b.dstartdate,b.denddate from Customer a left join PriceJustify b on a.cCusCode=b.cCusCode where b.cInvCode=\'' + foodsId + '\' and a.cCusCode=\'' + sessionStorage.getItem("ccuscode") + '\'" proc="Query" efdebug="1"  ></ufinterface>';
+											$.post("php/inventory.php", {
+												context: context
+											}, function(str) {
+												var xmlStrDoc = null;
+												if(window.DOMParser) { // Mozilla Explorer 
+													parser = new DOMParser();
+													xmlStrDoc = parser.parseFromString(str, "text/xml");
+												} else { // Internet Explorer 
+													xmlStrDoc = new ActiveXObject("Microsoft.XMLDOM");
+													xmlStrDoc.async = "false";
+													xmlStrDoc.loadXML(str);
+												}
+												MyLocalStorage.Cache.put(foodsId, parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")), 60);
+												$(".reviseCount").append("<p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("price")) + "</p>");
+											});
+										}
+									});
+								}
+							});
+							$(".reviseWrap").css({
+								display: "block"
+							});
+							$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p>");
+						}
+						return false;
+					} else {
+						var foodsIdCache = MyLocalStorage.Cache.get(foodsId);
+						if(foodsIdCache == null) {
+							alert("缓存已过期,请再次点击该品.");
+						} else {
+							$(".reviseWrap").css({
+								display: "block"
+							});
+							$(".reviseCount .goodInfo").remove();
+							$(".reviseCount").prepend("<p class='goodInfo' style='width:100%;'>" + this.children[0].innerHTML + "</p><p class='goodInfo'>" + this.children[1].innerHTML + "</p><p class='goodInfo'>" + this.children[2].innerHTML + "</p><p style='width: 0.2rem;position: absolute;top: 0.8rem;left: 3.2rem;'>¥</p><p class='priceInfo' style='position: absolute;top: 0.8rem;left: 3.3rem;'>" + MyLocalStorage.Cache.get(foodsId) + "</p>");
+						}
+					}
 				}
-				return false;
 			}
 		}
 	});

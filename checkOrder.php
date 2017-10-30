@@ -109,6 +109,9 @@
 					<div class="neworderdiv cCode">
 						<span>订单号：</span><span class="ccodeName"></span>
 					</div>
+					<div class="neworderdiv balance">
+						<p class="remarkName">备注：</p><p class="remark"></p>
+					</div>
 					<div class="neworderdiv dhDate">
 						<span>单据日期：</span><input disabled="disabled" type="date" name="" id="" value="" />
 					</div>
@@ -120,7 +123,11 @@
 				<div class="neworderfooter">
 					<div class="footerWindow"></div>
 				</div>
-				
+				<!--添加备注页面-->
+				<div class="addRemark">
+					<textarea name="remark" rows="10" cols="40"></textarea>
+					<div class="neworderbtn remarkBtn">添加备注</div>
+				</div>
 				<div class="seachWrap">
 					<div class="selectGoods">
 						<p>选择存货</p>
@@ -175,7 +182,7 @@
 	<script>
 		$(".neworderform").innerHeight(0.935 * window.innerHeight);
 		$(".neworderheader").innerHeight(0.2 * window.innerHeight);
-		$(".neworderfooter").innerHeight(0.68 * window.innerHeight);
+		$(".neworderfooter").innerHeight(0.62 * window.innerHeight);
 		var now = new Date();
 		var time = now.getHours();
 		function timeCtl () {
@@ -197,6 +204,23 @@
 			});
 		}
 		timeCtl();
+		//		点击添加备注
+		$(".remark")[0].addEventListener('touchstart', remark, false);
+
+		function remark(e) {
+			$(".addRemark").css({
+				display:"block"
+			});
+			$("textarea").val($(".remark").html());
+		}
+		$(".remarkBtn")[0].addEventListener('touchstart', remarkBtn, false);
+
+		function remarkBtn(e) {
+			$(".addRemark").css({
+				display:"none"
+			});
+			$(".remark").html($("textarea").val());
+		}
 		//		事件
 		if(sessionStorage.getItem("isChecked") == "已审核") {
 			$(".headerBtn").css({
@@ -223,8 +247,9 @@
 				xmlStrDoc.async = "false";
 				xmlStrDoc.loadXML(str);
 			}
+			$(".remark").html(xmlStrDoc.getElementsByTagName('head')[0].childNodes[0].getAttribute("str70"));
 			for(var i = 0; i < xmlStrDoc.getElementsByTagName('head')[0].childNodes.length; i++) {
-				$(".footerWindow").append("<div class='listBox'><p class='goodName' style='text-indent: 0.3rem;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvname") + "</p><p style='width:0.2rem;position:absolute;right:2.5rem;'>¥</p><p class='price'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float2")) + "</p><p class='standard'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvcode") + "</p><p class='count'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float1")) + "</p><p class='delList' style='width:0.8rem;height:0.4rem;font-size:0.3rem;border: 0.01rem solid black;position: absolute;top: 0.25rem;right: 0.2rem;line-height: 0.4rem;'>删除</p></div>");
+				$(".footerWindow").append("<div class='listBox'><p class='goodName' style='width: 3.5rem;text-align: left;text-indent: 0.3rem;'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvname") + "</p><p style='width:0.2rem;position:absolute;right:2.3rem;'>¥</p><p class='price' style='width: 2rem;'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float2")) + "</p><p class='standard'>" + xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_cinvcode") + "</p><p class='count'>" + parseFloat(xmlStrDoc.getElementsByTagName('head')[0].childNodes[i].getAttribute("b_float1")) + "</p><p class='delList' style='width:0.8rem;height:0.4rem;font-size:0.3rem;border: 0.01rem solid black;position: absolute;top: 0.25rem;right: 0.2rem;line-height: 0.4rem;'>删除</p></div>");
 			}
 			var delListEl = document.querySelectorAll(".delList");
 			for (var i=0;i<delListEl.length;i++) {
@@ -339,7 +364,7 @@
 					display: "none"
 				});
 				if(count != 0) {
-					$(".footerWindow").append("<div class='listBox'><p class='standard' style='width: 4rem;text-align: left;text-indent: 0.5rem;'>" + allPEl[0].innerHTML + "</p><p style='width:0.2rem;position:absolute;right:2rem;'>¥</p><p class='price' style='width: 1rem;margin-left: 0.4rem;text-align: left;'>" + aPrice + "</p><p class='goodName'>" + allPEl[1].innerHTML + "</p><p class='count'>" + count + "</p><p class='delList' style='width:0.8rem;height:0.4rem;font-size:0.3rem;border: 0.01rem solid black;position: absolute;top: 0.25rem;right: 0.2rem;line-height: 0.4rem;'>删除</p></div>");
+					$(".footerWindow").append("<div class='listBox'><p class='standard' style='width: 4rem;text-align: left;text-indent: 0.3rem;'>" + allPEl[0].innerHTML + "</p><p style='width:0.2rem;position:absolute;right:2rem;'>¥</p><p class='price' style='width: 1rem;margin-left: 0.4rem;text-align: left;'>" + aPrice + "</p><p class='goodName'>" + allPEl[1].innerHTML + "</p><p class='count'>" + count + "</p><p class='delList' style='width:0.8rem;height:0.4rem;font-size:0.3rem;border: 0.01rem solid black;position: absolute;top: 0.25rem;right: 0.2rem;line-height: 0.4rem;'>删除</p></div>");
 				} else {
 					alert("商品数量不能为0");
 				}
